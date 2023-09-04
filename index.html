@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vite App</title>
+</head>
+
+<body>
+  <!-- <form runat="server" class="form">
+    <input accept="image/*" type='file' id="imgInp" />
+    <img id="blah" src="#" alt="your image" />
+  </form>
+
+  <form runat="server" class="watermark">
+    <input accept="image/*" type='file' id="imgInp" />
+    <img id="blah" src="#" alt="your image" />
+  </form> -->
+
+  <input id="upload" type="file" accept="image/*" />
+  <div id="images" style="visibility: hidden; display: flex; flex-direction: column;">
+    <h2>Original image</h2>
+    <img id="originalImage" />
+    <h2>Watermaked image 1 (image watermark)</h2>
+    <img id="watermakedImage" />
+    <h2>Watermaked image 2 (text watermark)</h2>
+    <img id="watermakedImageWithText" />
+  </div>
+
+  <div class="hello">
+    <canvas id="drag"></canvas>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+
+</html>
