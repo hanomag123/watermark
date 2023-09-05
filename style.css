@@ -26,6 +26,8 @@ a:hover {
 body {
   margin: 0;
   display: flex;
+  flex-direction: column;
+  gap: 2rem;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
@@ -120,13 +122,14 @@ button:focus-visible {
   gap: 2rem;
 }
 
-.hello {
-  width: 100rem;
-  height: 90rem;
+.drag-block {
+  width: 100%;
+  height: 100%;
   display: block;
 }
 
-.hello canvas {
+.drag-block canvas {
   width: 100%;
   height: 100%;
 }
+

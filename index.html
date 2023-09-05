@@ -9,15 +9,32 @@
 </head>
 
 <body>
-  <!-- <form runat="server" class="form">
+
+  <div class="drag-block">
+    <canvas id="drag"></canvas>
+  </div>
+
+  <form runat="server" class="form">
     <input accept="image/*" type='file' id="imgInp" />
     <img id="blah" src="#" alt="your image" />
   </form>
 
-  <form runat="server" class="watermark">
-    <input accept="image/*" type='file' id="imgInp" />
-    <img id="blah" src="#" alt="your image" />
-  </form> -->
+  <p>
+    <input type="range" name="num2" class="slider" min="0.001" max="1" value="1" step="0.001" id="opacity">
+    <span class="slider_label"></span>
+  </p>
+
+  <p>
+    <input type="range" name="num2" class="slider" min="0.001" max="1.9" value="1" step="0.001" id="scale">
+    <span class="slider_label"></span>
+  </p>
+
+  <div>
+    <button id="saveButton">save</button>
+    <a href="#" id="saveButtonHref" download="myImage" hidden>Save</a>
+  </div>
+
+  
 
   <input id="upload" type="file" accept="image/*" />
   <div id="images" style="visibility: hidden; display: flex; flex-direction: column;">
@@ -25,13 +42,11 @@
     <img id="originalImage" />
     <h2>Watermaked image 1 (image watermark)</h2>
     <img id="watermakedImage" />
-    <h2>Watermaked image 2 (text watermark)</h2>
-    <img id="watermakedImageWithText" />
   </div>
 
-  <div class="hello">
-    <canvas id="drag"></canvas>
-  </div>
+
+
+
 
   <script type="module" src="/main.js"></script>
 </body>
