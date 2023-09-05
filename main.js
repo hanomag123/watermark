@@ -1,56 +1,110 @@
 import './style.css'
 
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-const saveButton = document.getElementById('saveButton');
-let img = null;
+let canvasW = null;
+let canvasH = null;
 let bg = null;
-// hiding the div that will contain the images
-const imagesDiv = document.querySelector("#images");
+let watermark = { src: null, x: 0, y: 0, width: null, height: null };
+let is_dragging = false;
+let startX;
+let startY;
+let scale = 1;
+let opacity = 1;
 
-const fileInput = document.querySelector("#upload");
 
-imgInp.onchange = evt => {
-  const [file] = imgInp.files;
-  const img = document.getElementById('blah');
-  if (file && img) {
-    img.src = URL.createObjectURL(file);
-    img.classList.add('active')
-    createWatermarks(img.src)
-  }
-  
+const addWatermark = document.getElementById('addWatermark');
+
+if (addWatermark) {
+  addWatermark.addEventListener('click', function () {
+    const inputFile = this.nextElementSibling;
+    if (inputFile) {
+      inputFile.click();
+    }
+  })
 }
 
-fileInput.addEventListener("change", async (e) => {
-  const [file] = fileInput.files;
+const inputFile = document.getElementById('inpWatermark');
 
-  // displaying the uploaded image
-  const originalImage = document.querySelector("#originalImage");
-  originalImage.src = await fileToDataUri(file);
+if (inputFile) {
+  inputFile.addEventListener('change', function () {
+    const [file] = this.files;
 
-  // adding the image watermark to the original image
-  // and showing the watermarked image
-  const watermakedImage = document.querySelector("#watermakedImage");
+    const watermarkList = document.getElementById('watermarkList');
+    if (watermarkList) {
+      const url = URL.createObjectURL(file);
+      watermarkList.insertAdjacentHTML('beforeend',
+        `<li class="watermarks-item"><img src="${url}" alt="img"></li>`
+      )
+      const lastChild = watermarkList.children.length - 1;
+      const newItem = watermarkList.children[lastChild];
 
+      newItem.addEventListener('click', watermarkClickHandler);
+      newItem.click();
+    }
+  })
+}
 
-  originalImage.addEventListener("load", async () => {
-    // watermakedImage.src = await watermakImage(
-    //   originalImage,
-    //   "./images/1.jpg"
-    // );
-    bg = originalImage;
-    let realWidth = bg.naturalWidth;
-    let realHeight = bg.naturalHeight;
-    
-    drawImages(img, originalImage)
-  });
+const waterMarksItems = document.querySelectorAll('.watermarks-item');
 
-  // making the div containing the image visible
-  imagesDiv.style.visibility = "visible";
+if (waterMarksItems.length) {
+  waterMarksItems.forEach(item => {
+    item.addEventListener('click', watermarkClickHandler)
+  })
+}
 
-  return false;
-});
+function watermarkClickHandler() {
+  const waterMarksItems = document.querySelectorAll('.watermarks-item');
+  if (waterMarksItems.length) {
+    waterMarksItems.forEach(el => el.classList.remove('active'));
+    if (bg) {
+      this.classList.add('active');
+      const img = this.querySelector('img');
+      if (img?.src) {
+        createWatermark(img.src)
+      }
+    }
+  }
+}
 
+const uploadFile = document.getElementById('uploadFile');
+const canvasWrapper = document.getElementById('canvasWrapper');
 
+if (uploadFile && canvasWrapper && canvas) {
+  uploadFile.addEventListener('dragover', drag);
+  uploadFile.addEventListener('dragleave', drop);
+  uploadFile.addEventListener('change', dragNdrop);
+}
+
+function dragNdrop(event) {
+  const [file] = event.target.files;
+
+  uploadImage(file);
+}
+function drag() {
+  document.getElementById('uploadFile').parentNode.className = 'draging dragBox';
+}
+function drop() {
+  document.getElementById('uploadFile').parentNode.className = 'dragBox';
+}
+
+async function uploadImage(file) {
+  const originalImage = document.getElementById("originalImage");
+
+  if (originalImage) {
+    originalImage.src = await fileToDataUri(file);
+    originalImage.addEventListener("load", async () => {
+
+      canvasW = canvas.width = originalImage.naturalWidth;
+      canvasH = canvas.height = originalImage.naturalHeight;
+
+      canvasWrapper.classList.add('active');
+      bg = originalImage;
+      drawCanvas(originalImage)
+    });
+  }
+}
 
 function fileToDataUri(field) {
   return new Promise((resolve) => {
@@ -64,74 +118,36 @@ function fileToDataUri(field) {
   });
 }
 
-async function watermakImage(originalImage, watermarkImagePath) {
-  const canvas = document.createElement("canvas");
-  const context = canvas.getContext("2d");
 
-  const canvasWidth = originalImage.width;
-  const canvasHeight = originalImage.height;
-
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-
-  // initializing the canvas with the original image
-  context.drawImage(originalImage, 0, 0, canvasWidth, canvasHeight);
-
-  // loading the watermark image and transforming it into a pattern
-  const result = await fetch(watermarkImagePath);
-  const blob = await result.blob();
-  const image = await createImageBitmap(blob);
-  const pattern = context.createPattern(image, "no-repeat");
-  // translating the watermark image to the bottom right corner
-  context.translate(canvasWidth - image.width, canvasHeight - image.height);
-  context.rect(0, 0, canvasWidth, canvasHeight);
-  context.fillStyle = pattern;
-
-  context.fill();
-
-  return canvas.toDataURL();
-}
-
-const canvas = document.getElementById('drag');
-
-const ctx = canvas.getContext('2d');
-
-const canvasW = canvas.width = canvas.getBoundingClientRect().width;
-const canvasH = canvas.height = canvas.getBoundingClientRect().height;
-
-canvas.style.border = '1px solid green';
-
-let watermarks = [];
-let images = [];
-let currentimageIndex = null;
-let is_dragging = false;
-let startX;
-let startY;
-
-
-
-
-images.push({ x: 200, y: 100, width: 400, height: 200, color: 'red' })
-
-let image = null;
-
-let createWatermarks = async function (src) {
-  // loading the watermark image and transforming it into a pattern
+let createWatermark = async function (src) {
   const result = await fetch(src);
   const blob = await result.blob();
-  img = await createImageBitmap(blob);
-  // pattern = await ctx.createPattern(image, "no-repeat")
-  await drawImages(img, bg)
+  const bitmap = await createImageBitmap(blob);
+  watermark.src = bitmap;
+  watermark.width = bitmap.width;
+  watermark.height = bitmap.height;
+  drawCanvas(bg, watermark)
 }
 
-createWatermarks('/images/1.jpg')
+function drawCanvas(bg = null, watermark = null) {
+  ctx.clearRect(0, 0, canvasW, canvasH)
+  if (bg) {
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height)
+  }
+  if (watermark?.src) {
+    ctx.globalAlpha = opacity;
+    ctx.drawImage(watermark.src, watermark.x, watermark.y, watermark.width, watermark.height);
+  }
+  ctx.fill();
+
+  ctx.globalAlpha = 1;
+}
 
 let isMouseInimage = function (x, y, image) {
   let image_left = image.x;
   let image_right = image.x + image.width;
   let image_top = image.y;
   let image_bottom = image.y + image.height;
-
   if (x > image_left && x < image_right && y > image_top && y < image_bottom) {
     return true;
   } else {
@@ -144,15 +160,12 @@ let mouseDown = function (event) {
   startY = parseInt(event.clientY - canvas.getBoundingClientRect().top);
   startX = parseInt(event.clientX - canvas.getBoundingClientRect().left);
 
-  let index = 0;
-  for (let image of images) {
-    if (isMouseInimage(startX, startY, image)) {
-      currentimageIndex = index;
-      is_dragging = true;
-      return;
-    }
-    index++
+  if (isMouseInimage(startX, startY, watermark)) {
+    is_dragging = true;
+    return;
   }
+
+
 }
 
 let mouseUp = function (event) {
@@ -184,11 +197,10 @@ let mouseMove = function (event) {
     let dx = mouseX - startX;
     let dy = mouseY - startY;
 
-    let currentimage = images[currentimageIndex];
-    currentimage.x += dx;
-    currentimage.y += dy;
+    watermark.x += dx;
+    watermark.y += dy;
 
-    drawImages(img, bg);
+    drawCanvas(bg, watermark);
 
     startX = mouseX;
     startY = mouseY;
@@ -200,39 +212,6 @@ canvas.onmouseup = mouseUp;
 canvas.onmouseout = mouseOut;
 canvas.onmousemove = mouseMove;
 
-let imgOpacity = 1;
-let scale = 1;
-let drawImages = async function (img = null, bg = null) {
-
-  ctx.clearRect(0, 0, canvasW, canvasH)
-  if (bg) {
-    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height)
-  }
-
-  ctx.globalAlpha = imgOpacity;
-  for (let image of images) {
-    ctx.fillStyle = image.color;
-    ctx.fillRect(image.x, image.y, image.width, image.height);
-    // translating the watermark image to the bottom right corner
-    if (img) {
-      ctx.drawImage(img, image.x, image.y, image.width, image.height);
-    }
-
-    ctx.fill();
-
-  }
-  ctx.globalAlpha = 1;
-
-}
-
-if (saveButton) {
-  saveButton.addEventListener('click', function () {
-    this.nextElementSibling.href = canvas.toDataURL()
-    this.nextElementSibling.click()
-  })
-}
-
-
 const inputs = document.querySelectorAll('input[type=range]');
 
 if (inputs.length) {
@@ -241,17 +220,17 @@ if (inputs.length) {
       this.nextElementSibling.innerHTML = range.value;
 
       if (this.id === 'opacity') {
-        imgOpacity = range.value;
-        drawImages(img, bg)
+        opacity = range.value;
+        drawCanvas(bg, watermark)
       }
 
       if (this.id === 'scale') {
         scale = range.value;
-        for (let image of images) {
-          image.width = image.width * scale;
-          image.height = image.height * scale;
-        }
-        drawImages(img, bg)
+
+          watermark.width = watermark.width * scale;
+          watermark.height = watermark.height * scale;
+
+        drawCanvas(bg, watermark)
       }
     })
 
@@ -259,5 +238,37 @@ if (inputs.length) {
   })
 }
 
+const preview = document.getElementById('preview');
+const imagePreview = document.getElementById('imagePreview')
 
+if (preview) {
+  preview.addEventListener('click', function () {
+    imagePreview.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = canvas.toDataURL();
+    imagePreview.appendChild(img)
+    imagePreview.hidden = false;
+    setTimeout(() => {
+      document.addEventListener('click', closePreview)
+    }, .3)
+  })
+}
 
+function closePreview() {
+
+    imagePreview.hidden = true;
+    document.removeEventListener('click', closePreview)
+
+}
+
+const saveButton = document.getElementById('saveButton')
+
+if (saveButton) {
+  saveButton.addEventListener('click', function () {
+    this.nextElementSibling.href = canvas.toDataURL();
+    this.nextElementSibling.click();
+
+    ctx.clearRect(0, 0, canvasW, canvasH);
+    canvasWrapper.classList.remove('active')
+  })
+}

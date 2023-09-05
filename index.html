@@ -1,54 +1,74 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vite App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Watermark</title>
 </head>
 
 <body>
 
-  <div class="drag-block">
-    <canvas id="drag"></canvas>
+  <h2 class="watermarks-title">Выберите ватермарку или добавьте свою:</h2>
+
+  <div class="watermarks-block">
+    <ul class="watermarks-list" id="watermarkList">
+      <li class="watermarks-item">
+        <img src="/images/1.jpg" alt="img">
+      </li>
+    </ul>
+    <form class="watermark-form">
+      <button type="button" class="button_plus" id="addWatermark"></button>
+      <input accept="image/*" type='file' id="inpWatermark">
+    </form>
   </div>
 
-  <form runat="server" class="form">
-    <input accept="image/*" type='file' id="imgInp" />
-    <img id="blah" src="#" alt="your image" />
-  </form>
+  <div class="canvas-wrapper" id="canvasWrapper">
 
-  <p>
-    <input type="range" name="num2" class="slider" min="0.001" max="1" value="1" step="0.001" id="opacity">
-    <span class="slider_label"></span>
-  </p>
+    <div class="inputs">
+      <div>
+        <h3>Изменить прозрачность:</h3>
+        <input type="range" name="num2" class="slider" min="0.001" max="1" value="1" step="0.001" id="opacity">
+        <span class="slider_label"></span>
+      </div>
 
-  <p>
-    <input type="range" name="num2" class="slider" min="0.001" max="1.9" value="1" step="0.001" id="scale">
-    <span class="slider_label"></span>
-  </p>
+      <div>
+        <h3>Изменить масштаб:</h3>
+        <input type="range" name="num2" class="slider" min="0.001" max="1.9" value="1" step="0.001" id="scale">
+        <span class="slider_label"></span>
+      </div>
 
-  <div>
-    <button id="saveButton">save</button>
-    <a href="#" id="saveButtonHref" download="myImage" hidden>Save</a>
+      <div>
+        <button id="saveButton">Сохранить изображение</button>
+        <a href="#" id="saveButtonHref" download="myImage" hidden>Save</a>
+      </div>
+
+      <div>
+        <button id="preview">Предпросмотр</button>
+      </div>
+    </div>
+
+    <div class="uploadOuter">
+      <span class="dragBox">
+        Выберите своё изображение
+        <label for="uploadFile" class="button_plus --drag"></label>
+        <input type="file" id="uploadFile" class="uploadFile">
+      </span>
+    </div>
+
+
+    <canvas id="canvas"></canvas>
   </div>
 
-  
 
-  <input id="upload" type="file" accept="image/*" />
-  <div id="images" style="visibility: hidden; display: flex; flex-direction: column;">
-    <h2>Original image</h2>
-    <img id="originalImage" />
-    <h2>Watermaked image 1 (image watermark)</h2>
-    <img id="watermakedImage" />
+  <img src="#" id="originalImage" hidden alt="originalImage">
+
+  <div class="imagePreview" id="imagePreview" hidden>
   </div>
-
-
-
-
 
   <script type="module" src="/main.js"></script>
+
+
 </body>
 
 </html>
