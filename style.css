@@ -205,9 +205,7 @@ button:focus-visible {
 .uploadOuter {
   text-align: center;
   padding: 4rem;
-  strong {
-    padding: 0 10px
-  }
+
 }
 .dragBox {
   width: 25rem;
@@ -221,23 +219,12 @@ button:focus-visible {
   border: 2px dashed #ccc;
   display: inline-block;
   transition: transform 0.3s;
-  input[type="file"] {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    opacity: 0;
-    top: 0;
-    left: 0;
-  }
 }
 .draging {
   transform: scale(1.05);
 }
 #preview {
   text-align: center;
-  img {
-    max-width: 100%
-  }
 }
 
 .uploadFile {
