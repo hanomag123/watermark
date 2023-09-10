@@ -278,3 +278,7 @@ button:focus-visible {
   height: 100%;
   object-fit: contain;
 }
+
+.canvas-wrapper canvas.grabcursor {
+  cursor: grabbing;
+}

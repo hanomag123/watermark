@@ -118,14 +118,15 @@ function fileToDataUri(field) {
   });
 }
 
-
+let initialWidth = null;
+let initialHeight = null;
 let createWatermark = async function (src) {
   const result = await fetch(src);
   const blob = await result.blob();
   const bitmap = await createImageBitmap(blob);
   watermark.src = bitmap;
-  watermark.width = bitmap.width;
-  watermark.height = bitmap.height;
+  watermark.width = initialWidth = bitmap.width;
+  watermark.height = initialHeight = bitmap.height;
   drawCanvas(bg, watermark)
 }
 
@@ -188,9 +189,11 @@ let mouseOut = function (event) {
 
 let mouseMove = function (event) {
   if (!is_dragging) {
+    canvas.classList.remove('grabcursor')
     return
   } else {
     event.preventDefault()
+    canvas.classList.add('grabcursor')
     const mouseY = parseInt(event.clientY - canvas.getBoundingClientRect().top);
     const mouseX = parseInt(event.clientX - canvas.getBoundingClientRect().left);
 
@@ -216,26 +219,29 @@ const inputs = document.querySelectorAll('input[type=range]');
 
 if (inputs.length) {
   inputs.forEach(range => {
-    range.addEventListener('change', function () {
-      this.nextElementSibling.innerHTML = range.value;
+    range.addEventListener('change', opacityScale);
+    range.addEventListener('input', opacityScale);
 
-      if (this.id === 'opacity') {
-        opacity = range.value;
-        drawCanvas(bg, watermark)
-      }
-
-      if (this.id === 'scale') {
-        scale = range.value;
-
-          watermark.width = watermark.width * scale;
-          watermark.height = watermark.height * scale;
-
-        drawCanvas(bg, watermark)
-      }
-    })
 
     range.nextElementSibling.innerHTML = range.value
   })
+}
+
+function opacityScale () {
+  this.nextElementSibling.innerHTML = this.value;
+
+  if (this.id === 'opacity') {
+    opacity = this.value;
+    drawCanvas(bg, watermark)
+  }
+
+  if (this.id === 'scale') {
+    scale = this.value;
+      watermark.width = initialWidth * scale;
+      watermark.height = initialHeight * scale;
+
+    drawCanvas(bg, watermark)
+  }
 }
 
 const preview = document.getElementById('preview');
